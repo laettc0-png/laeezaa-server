@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Donate — laeezaa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io('http://localhost:3000');
+
+  socket.on('new-donation', (data) => {
+    // แสดง Donation Alert อัตโนมัติ!
+    document.getElementById('donation-name').innerText = data.name;
+    document.getElementById('donation-amount').innerText = parseInt(data.amount).toLocaleString();
+    document.getElementById('donation-msg').innerText = data.message || '';
+
+    let box = document.getElementById('donation-box');
+    box.style.display = 'block';
+    box.style.animation = 'none';
+    box.offsetHeight;
+    box.style.animation = 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+    playDonationSound();
+
+    setTimeout(() => { box.style.display = 'none'; }, 5000);
+  });
+</script>
+  <style>
+    :root {
+      --bg: #05050f;
+      --card: #0c0c1e;
+      --border: #1a1a35;
+      --gold: #ffd700;
+      --gold2: #ffaa00;
+      --cyan: #00f0ff;
+      --pink: #ff2d78;
+      --purple: #b400ff;
+      --text: #e8e8ff;
+      --muted: #4a4a7a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans Thai', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,215,0,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,215,0,0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb1 {
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(255,215,0,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: float1 8s ease-in-out infinite alternate;
+    }
+
+    .bg-orb2 {
+      position: fixed;
+      bottom: -150px;
+      left: -150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(180,0,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: float2 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes float1 {
+      from { transform: translate(0, 0); }
+      to { transform: translate(-100px, 100px); }
+    }
+
+    @keyframes float2 {
+      from { transform: translate(0, 0); }
+      to { transform: translate(80px, -80px); }
+    }
+
+    /* Particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: particleFall linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes particleFall {
+      0% { transform: translateY(-10px); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.2; }
+      100% { transform: translateY(100vh); opacity: 0; }
+    }
+
+    /* Main layout */
+    .main {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      padding: 40px 20px 60px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .streamer-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--gold), var(--purple));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 30px rgba(255,215,0,0.3), 0 0 60px rgba(255,215,0,0.1);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,215,0,0.3), 0 0 60px rgba(255,215,0,0.1); }
+      50% { box-shadow: 0 0 40px rgba(255,215,0,0.5), 0 0 80px rgba(255,215,0,0.2); }
+    }
+
+    .streamer-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 24px;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--gold), var(--gold2), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% auto;
+      animation: shine 3s linear infinite;
+      letter-spacing: 3px;
+    }
+
+    @keyframes shine {
+      from { background-position: 0% center; }
+      to { background-position: 200% center; }
+    }
+
+    .streamer-sub {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,45,120,0.1);
+      border: 1px solid rgba(255,45,120,0.3);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: var(--pink);
+      letter-spacing: 2px;
+      margin-top: 10px;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--pink);
+      border-radius: 50%;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Amount presets */
+    .amount-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .preset-btn {
+      background: rgba(255,215,0,0.05);
+      border: 1px solid rgba(255,215,0,0.15);
+      border-radius: 10px;
+      padding: 10px 4px;
+      color: var(--gold);
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .preset-btn:hover, .preset-btn.active {
+      background: rgba(255,215,0,0.12);
+      border-color: rgba(255,215,0,0.4);
+      box-shadow: 0 0 12px rgba(255,215,0,0.15);
+      transform: translateY(-1px);
+    }
+
+    .preset-amount { font-size: 13px; font-weight: 700; }
+    .preset-label { font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+
+    /* Form */
+    .form-group { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Noto Sans Thai', sans-serif;
+      font-size: 15px;
+      padding: 12px 14px;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: rgba(255,215,0,0.4);
+      box-shadow: 0 0 16px rgba(255,215,0,0.08);
+    }
+
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+
+    textarea { resize: none; height: 80px; }
+
+    /* Custom amount */
+    .custom-amount-wrap {
+      position: relative;
+    }
+
+    .currency-label {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      color: var(--gold);
+    }
+
+    .custom-amount-wrap input {
+      padding-left: 36px;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #000;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .submit-btn:hover::before { left: 100%; }
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,215,0,0.3); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* QR Section */
+    #qr-section {
+      display: none;
+      text-align: center;
+    }
+
+    .qr-amount {
+      font-family: 'Orbitron', monospace;
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(255,215,0,0.4);
+      margin: 8px 0 4px;
+    }
+
+    .qr-from {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .qr-wrap {
+      display: inline-block;
+      padding: 16px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 0 40px rgba(255,215,0,0.2);
+      margin-bottom: 16px;
+    }
+
+    .qr-timer {
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .qr-timer span {
+      color: var(--gold);
+      font-size: 18px;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    .cancel-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 8px 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cancel-btn:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* Success */
+    #success-section {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .success-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes successPop {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .success-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 20px;
+      color: #00ff88;
+      margin-bottom: 8px;
+    }
+
+    .success-sub { font-size: 14px; color: var(--muted); }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .footer a { color: var(--gold); text-decoration: none; }
+
+    /* Countdown timer bar */
+    .timer-bar {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .timer-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+      border-radius: 2px;
+      transition: width 1s linear;
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+<div class="particles" id="particles"></div>
+
+<div class="main">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="streamer-avatar">🎮</div>
+    <div class="streamer-name">LAEEZAA</div>
+    <div class="streamer-sub">Streaming Channel</div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE NOW
+    </div>
+  </div>
+
+  <!-- Donate Card -->
+  <div class="card">
+
+    <!-- Form Section -->
+    <div id="form-section">
+      <div class="card-title">💰 ส่ง Donate</div>
+
+      <!-- Amount Presets -->
+      <div class="amount-presets">
+        <button class="preset-btn" onclick="setAmount(5000)">
+          <div class="preset-amount">5K</div>
+          <div class="preset-label">LAK</div>
+        </button>
+        <button class="preset-btn" onclick="setAmount(10000)">
+          <div class="preset-amount">10K</div>
+          <div class="preset-label">LAK</div>
+        </button>
+        <button class="preset-btn" onclick="setAmount(20000)">
+          <div class="preset-amount">20K</div>
+          <div class="preset-label">LAK</div>
+        </button>
+        <button class="preset-btn" onclick="setAmount(50000)">
+          <div class="preset-amount">50K</div>
+          <div class="preset-label">LAK</div>
+        </button>
+      </div>
+
+      <!-- Custom Amount -->
+      <div class="form-group">
+        <label>จำนวนเงิน (LAK)</label>
+        <div class="custom-amount-wrap">
+          <span class="currency-label">₭</span>
+          <input type="number" id="amount" placeholder="กรอกจำนวน..." min="1000" />
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div class="form-group">
+        <label>ชื่อของคุณ</label>
+        <input type="text" id="donor-name" placeholder="เช่น SomChai99" maxlength="30" />
+      </div>
+
+      <!-- Message -->
+      <div class="form-group">
+        <label>ข้อความถึง Streamer</label>
+        <textarea id="donor-msg" placeholder="เช่น สู้ๆ นะครับ! GG 🎮" maxlength="100"></textarea>
+      </div>
+
+      <button class="submit-btn" onclick="generateQR()" id="submit-btn">
+        💰 DONATE ผ่าน BCEL ONE
+      </button>
+    </div>
+
+    <!-- QR Section -->
+    <div id="qr-section">
+      <div class="card-title">📱 สแกนเพื่อชำระเงิน</div>
+
+      <div class="qr-amount">₭<span id="show-amount">0</span></div>
+      <div class="qr-from">จาก <strong id="show-name"></strong></div>
+
+      <div class="timer-bar">
+        <div class="timer-fill" id="timer-fill"></div>
+      </div>
+
+      <div class="qr-wrap">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        รอการชำระเงิน... (<span id="countdown">300</span>s)
+      </div>
+
+      <button class="cancel-btn" onclick="cancelQR()">✕ ยกเลิก</button>
+    </div>
+
+    <!-- Success Section -->
+    <div id="success-section">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">ขอบคุณมากครับ!</div>
+      <div class="success-sub" id="success-msg"></div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Powered by <a href="#">laeezaa streaming</a> × BCEL ONE
+  </div>
+
+</div>
+
+<script>
+  // ⚠️ ใส่ Test Key ของคุณตรงนี้
+  const SECRET_KEY = 'ใส่ Test Key ตรงนี้';
+  const BCEL_URL = 'https://payment-gateway.phajay.co/v1/api/payment/generate-bcel-qr';
+
+  let countdownTimer = null;
+  let timeLeft = 300;
+
+  // สร้าง particles
+  function createParticles() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (Math.random() * 10 + 8) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      p.style.width = p.style.height = (Math.random() * 3 + 1) + 'px';
+      container.appendChild(p);
+    }
+  }
+  createParticles();
+
+  // ตั้งจำนวนเงินจาก preset
+  function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.preset-btn').classList.add('active');
+  }
+
+  // สร้าง QR Code
+  const SERVER_URL = 'http://localhost:3000';
+
+async function generateQR() {
+  const amount = document.getElementById('amount').value;
+  const name = document.getElementById('donor-name').value || 'Anonymous';
+  const msg = document.getElementById('donor-msg').value;
+
+  if (!amount || amount < 1) {
+    alert('กรุณากรอกจำนวนเงินครับ');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerText = '⏳ กำลังสร้าง QR...';
+
+  try {
+    const response = await fetch(`${SERVER_URL}/api/create-qr`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, name, message: msg })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('qr-section').style.display = 'block';
+      document.getElementById('show-amount').innerText = parseInt(amount).toLocaleString();
+      document.getElementById('show-name').innerText = name;
+
+      QRCode.toCanvas(document.getElementById('qr-canvas'), data.qrCode, {
+        width: 200, margin: 1
+      });
+
+      startCountdown(name, amount, msg);
+    } else {
+      alert('เกิดข้อผิดพลาด: ' + data.message);
+      btn.disabled = false;
+      btn.innerText = '💰 DONATE ผ่าน BCEL ONE';
+    }
+  } catch(err) {
+    alert('ไม่สามารถเชื่อมต่อ Server ได้ครับ');
+    btn.disabled = false;
+    btn.innerText = '💰 DONATE ผ่าน BCEL ONE';
+  }
+}
+</script>
+</body>
+</html>

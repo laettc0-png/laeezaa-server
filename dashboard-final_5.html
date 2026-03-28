@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>laeezaa streaming</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io('http://localhost:3000');
+
+  socket.on('new-donation', (data) => {
+    // แสดง Donation Alert อัตโนมัติ!
+    document.getElementById('donation-name').innerText = data.name;
+    document.getElementById('donation-amount').innerText = parseInt(data.amount).toLocaleString();
+    document.getElementById('donation-msg').innerText = data.message || '';
+
+    let box = document.getElementById('donation-box');
+    box.style.display = 'block';
+    box.style.animation = 'none';
+    box.offsetHeight;
+    box.style.animation = 'popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+    playDonationSound();
+
+    setTimeout(() => { box.style.display = 'none'; }, 5000);
+  });
+</script>
+  <style>
+    :root {
+      --bg: #060610;
+      --bg2: #0d0d1f;
+      --card: #0f0f22;
+      --border: #1e1e40;
+      --accent: #00f0ff;
+      --accent2: #ff2d78;
+      --accent3: #b400ff;
+      --green: #00ff88;
+      --text: #e0e8ff;
+      --muted: #5a5a8a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sarabun', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* glowing orbs */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(180,0,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: orbMove 10s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbMove {
+      from { transform: translate(0, 0); }
+      to   { transform: translate(200px, 300px); }
+    }
+
+    .orb2 {
+      position: fixed;
+      bottom: -150px;
+      right: -150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0,240,255,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: orbMove2 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbMove2 {
+      from { transform: translate(0, 0); }
+      to   { transform: translate(-150px, -200px); }
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      padding: 28px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px rgba(0,240,255,0.3);
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,45,120,0.1);
+      border: 1px solid rgba(255,45,120,0.3);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      letter-spacing: 2px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent2);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* THEME SELECTOR */
+    .theme-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .theme-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-right: 8px;
+    }
+
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .theme-btn:hover { transform: scale(1.15); }
+    .theme-btn.active { border-color: white; box-shadow: 0 0 12px rgba(255,255,255,0.3); }
+
+    .theme-cyberpunk { background: linear-gradient(135deg, #00f0ff, #b400ff); }
+    .theme-crimson   { background: linear-gradient(135deg, #ff4444, #ff8c00); }
+    .theme-matrix    { background: linear-gradient(135deg, #00ff88, #00aa44); }
+    .theme-gold      { background: linear-gradient(135deg, #ffd700, #ff8c00); }
+    .theme-pink      { background: linear-gradient(135deg, #ff6bcd, #ff2d78); }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card:hover {
+      border-color: rgba(0,240,255,0.2);
+      box-shadow: 0 0 30px rgba(0,240,255,0.05);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .icon-cyan { background: rgba(0,240,255,0.1); box-shadow: 0 0 12px rgba(0,240,255,0.15); }
+    .icon-pink { background: rgba(255,45,120,0.1); box-shadow: 0 0 12px rgba(255,45,120,0.15); }
+    .icon-purple { background: rgba(180,0,255,0.1); box-shadow: 0 0 12px rgba(180,0,255,0.15); }
+    .icon-green { background: rgba(0,255,136,0.1); box-shadow: 0 0 12px rgba(0,255,136,0.15); }
+
+    .card-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* TIMER */
+    #timer {
+      font-family: 'Orbitron', monospace;
+      font-size: 52px;
+      font-weight: 900;
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px rgba(0,240,255,0.5), 0 0 40px rgba(0,240,255,0.2);
+      margin: 12px 0 18px;
+      transition: color 0.3s;
+    }
+
+    #timer.running { color: var(--green); text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+
+    /* VIEWER */
+    .viewer-display {
+      text-align: center;
+      margin: 8px 0 18px;
+    }
+
+    #viewer-count {
+      font-family: 'Orbitron', monospace;
+      font-size: 64px;
+      font-weight: 900;
+      color: var(--accent2);
+      text-shadow: 0 0 20px rgba(255,45,120,0.5);
+      line-height: 1;
+    }
+
+    .viewer-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    /* BUTTONS */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .btn-cyan {
+      background: rgba(0,240,255,0.08);
+      border-color: rgba(0,240,255,0.25);
+      color: var(--accent);
+    }
+    .btn-cyan:hover {
+      background: rgba(0,240,255,0.15);
+      box-shadow: 0 0 16px rgba(0,240,255,0.2);
+    }
+
+    .btn-pink {
+      background: rgba(255,45,120,0.08);
+      border-color: rgba(255,45,120,0.25);
+      color: var(--accent2);
+    }
+    .btn-pink:hover {
+      background: rgba(255,45,120,0.15);
+      box-shadow: 0 0 16px rgba(255,45,120,0.2);
+    }
+
+    .btn-purple {
+      background: rgba(180,0,255,0.08);
+      border-color: rgba(180,0,255,0.25);
+      color: var(--accent3);
+    }
+    .btn-purple:hover {
+      background: rgba(180,0,255,0.15);
+      box-shadow: 0 0 16px rgba(180,0,255,0.2);
+    }
+
+    /* ALERT */
+    #alert-box {
+      display: none;
+      background: linear-gradient(135deg, rgba(180,0,255,0.2), rgba(0,240,255,0.2));
+      border: 1px solid rgba(0,240,255,0.3);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      margin: 12px 0;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 30px rgba(0,240,255,0.15);
+    }
+
+    @keyframes popIn {
+      0%   { transform: scale(0.5) translateY(10px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .alert-input-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    /* INPUTS */
+    input[type="text"] {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px;
+      padding: 9px 13px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: rgba(0,240,255,0.4);
+      box-shadow: 0 0 12px rgba(0,240,255,0.1);
+    }
+
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    /* CHAT */
+    #chat-box {
+      height: 210px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      padding-right: 4px;
+    }
+
+    #chat-box::-webkit-scrollbar { width: 4px; }
+    #chat-box::-webkit-scrollbar-track { background: transparent; }
+    #chat-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .message {
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      animation: fadeSlide 0.3s ease;
+      line-height: 1.5;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .username { font-weight: 700; margin-right: 6px; font-size: 13px; }
+    .msg-text { color: #c0c8e8; }
+
+    .c0 { color: #00f0ff; }
+    .c1 { color: #ff2d78; }
+    .c2 { color: #00ff88; }
+    .c3 { color: #b400ff; }
+    .c4 { color: #ffd700; }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input-row input:first-child { width: 100px; flex: none; }
+    .chat-input-row input:last-of-type { flex: 1; }
+
+    /* DONATION ALERT */
+    #donation-box {
+      display: none;
+      background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,140,0,0.15));
+      border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      margin: 12px 0;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 30px rgba(255,215,0,0.15);
+    }
+
+    .donation-amount {
+      font-family: 'Orbitron', monospace;
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffd700;
+      text-shadow: 0 0 12px rgba(255,215,0,0.6);
+    }
+
+    .donation-name {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 4px;
+    }
+
+    .donation-msg {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    .btn-gold {
+      background: rgba(255,215,0,0.08);
+      border-color: rgba(255,215,0,0.3);
+      color: #ffd700;
+    }
+
+    .btn-gold:hover {
+      background: rgba(255,215,0,0.15);
+      box-shadow: 0 0 16px rgba(255,215,0,0.2);
+    }
+
+    .icon-gold { background: rgba(255,215,0,0.1); box-shadow: 0 0 12px rgba(255,215,0,0.15); }
+
+    /* SCANLINE overlay */
+    .scanline {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb2"></div>
+<div class="scanline"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🎮</div>
+      <div>
+        <div class="logo-text">LAEEZAA</div>
+        <div class="logo-sub">Streaming Dashboard</div>
+      </div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+  </header>
+
+  <!-- THEME BAR -->
+  <div class="theme-bar">
+    <span class="theme-label">🎨 Theme</span>
+    <button class="theme-btn theme-cyberpunk active" onclick="setTheme('cyberpunk')" title="Cyberpunk"></button>
+    <button class="theme-btn theme-crimson" onclick="setTheme('crimson')" title="Crimson"></button>
+    <button class="theme-btn theme-matrix" onclick="setTheme('matrix')" title="Matrix"></button>
+    <button class="theme-btn theme-gold" onclick="setTheme('gold')" title="Gold"></button>
+    <button class="theme-btn theme-pink" onclick="setTheme('pink')" title="Pink"></button>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <!-- Card 1: Timer -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-cyan">⏱</div>
+        <div class="card-title">Stream Timer</div>
+      </div>
+      <div id="timer">00:00:00</div>
+      <div class="btn-row">
+        <button class="btn btn-cyan" onclick="startTimer()">▶ START</button>
+        <button class="btn btn-purple" onclick="pauseTimer()">⏸ PAUSE</button>
+        <button class="btn btn-pink" onclick="resetTimer()">↺ RESET</button>
+      </div>
+    </div>
+
+    <!-- Card 2: Viewers -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-pink">👁</div>
+        <div class="card-title">Viewers</div>
+      </div>
+      <div class="viewer-display">
+        <div id="viewer-count">0</div>
+        <div class="viewer-label">คนกำลังดูอยู่</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-cyan" onclick="addViewer()">+ เพิ่ม</button>
+        <button class="btn btn-pink" onclick="removeViewer()">− ลด</button>
+      </div>
+    </div>
+
+    <!-- Card 3: Follow Alert -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-purple">🔔</div>
+        <div class="card-title">Follow Alert</div>
+      </div>
+      <div id="alert-box">🎉 <span id="alert-name"></span> followed!</div>
+      <div class="alert-input-row">
+        <input type="text" id="alert-username" placeholder="ชื่อผู้ชม..." />
+        <button class="btn btn-purple" onclick="showAlert()" style="white-space:nowrap;">TEST</button>
+      </div>
+    </div>
+
+    <!-- Card 4: Donation Alert + BCEL QR -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-gold">💰</div>
+        <div class="card-title">Donation BCEL</div>
+      </div>
+
+      <!-- Alert box -->
+      <div id="donation-box">
+        <div class="donation-amount">₭<span id="donation-amount">0</span></div>
+        <div class="donation-name">จาก <span id="donation-name"></span></div>
+        <div class="donation-msg" id="donation-msg"></div>
+      </div>
+
+      <!-- Tab buttons -->
+      <div style="display:flex; gap:6px; margin:10px 0;">
+        <button class="btn btn-gold" onclick="switchTab('test')" id="tab-test" style="flex:1; font-size:10px;">🧪 TEST</button>
+        <button class="btn" onclick="switchTab('bcel')" id="tab-bcel" style="flex:1; font-size:10px; background:rgba(0,240,255,0.08); border-color:rgba(0,240,255,0.25); color:#00f0ff;">📱 BCEL QR</button>
+      </div>
+
+      <!-- Test tab -->
+      <div id="tab-test-content">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <input type="text" id="donation-user" placeholder="ชื่อผู้ donate..." />
+          <input type="text" id="donation-amount-input" placeholder="จำนวนเงิน เช่น 10000" />
+          <input type="text" id="donation-message" placeholder="ข้อความ (ไม่บังคับ)" />
+          <button class="btn btn-gold" onclick="showDonation()">💰 TEST DONATION</button>
+        </div>
+      </div>
+
+      <!-- BCEL QR tab -->
+      <div id="tab-bcel-content" style="display:none;">
+        <div id="bcel-form" style="display:flex; flex-direction:column; gap:8px;">
+          <input type="text" id="bcel-name" placeholder="ชื่อผู้ donate..." />
+          <input type="number" id="bcel-amount" placeholder="จำนวนเงิน (1-999 LAK)" />
+          <input type="text" id="bcel-msg" placeholder="ข้อความ (ไม่บังคับ)" />
+          <button class="btn btn-gold" onclick="generateBCEL()" id="bcel-btn">📱 สร้าง QR BCEL</button>
+        </div>
+        <div id="bcel-qr" style="display:none; text-align:center; margin-top:10px;">
+          <div style="font-family:'Orbitron',monospace; font-size:11px; color:#ffd700; letter-spacing:2px; margin-bottom:8px;">📱 สแกนด้วย BCEL ONE</div>
+          <canvas id="bcel-canvas" style="border-radius:8px; border:2px solid #ffd700;"></canvas>
+          <div style="font-size:12px; color:#5a5a8a; margin-top:8px;" id="bcel-status">⏳ รอการชำระเงิน...</div>
+          <button onclick="cancelBCEL()" style="margin-top:8px; background:transparent; border:1px solid #1e1e40; color:#5a5a8a; border-radius:6px; padding:6px 14px; cursor:pointer; font-size:12px;">✕ ยกเลิก</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Card 5: Chat -->
+    <div class="card" style="grid-column: span 2;">
+      <div class="card-header">
+        <div class="card-icon icon-green">💬</div>
+        <div class="card-title">Live Chat</div>
+      </div>
+      <div id="chat-box"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-user" placeholder="ชื่อ..." />
+        <input type="text" id="chat-msg" placeholder="ข้อความ..." />
+        <button class="btn btn-cyan" onclick="sendMessage()">ส่ง</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ===== Timer =====
+  let seconds = 0, interval = null, running = false;
+
+  function startTimer() {
+    if (running) return;
+    running = true;
+    document.getElementById("timer").classList.add("running");
+    interval = setInterval(() => { seconds++; updateTimer(); }, 1000);
+  }
+
+  function pauseTimer() {
+    clearInterval(interval);
+    running = false;
+    document.getElementById("timer").classList.remove("running");
+  }
+
+  function resetTimer() {
+    clearInterval(interval);
+    running = false;
+    seconds = 0;
+    document.getElementById("timer").classList.remove("running");
+    updateTimer();
+  }
+
+  function updateTimer() {
+    let h = Math.floor(seconds / 3600);
+    let m = Math.floor((seconds % 3600) / 60);
+    let s = seconds % 60;
+    document.getElementById("timer").innerText = pad(h)+":"+pad(m)+":"+pad(s);
+  }
+
+  function pad(n) { return n < 10 ? "0"+n : n; }
+
+  // ===== Viewers =====
+  let viewers = 0;
+
+  function addViewer() {
+    viewers++;
+    document.getElementById("viewer-count").innerText = viewers;
+  }
+
+  function removeViewer() {
+    if (viewers > 0) viewers--;
+    document.getElementById("viewer-count").innerText = viewers;
+  }
+
+  // ===== Alert =====
+  function showAlert() {
+    let name = document.getElementById("alert-username").value || "Someone";
+    document.getElementById("alert-name").innerText = name;
+    let box = document.getElementById("alert-box");
+    box.style.display = "block";
+    box.style.animation = "none";
+    box.offsetHeight;
+    box.style.animation = "popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+    setTimeout(() => { box.style.display = "none"; }, 3000);
+  }
+
+  // ===== Donation Alert =====
+  let donationTimeout;
+  function showDonation() {
+    let name = document.getElementById("donation-user").value || "Anonymous";
+    let amount = document.getElementById("donation-amount-input").value || "50";
+    let msg = document.getElementById("donation-message").value;
+
+    document.getElementById("donation-name").innerText = name;
+    document.getElementById("donation-amount").innerText = amount;
+    document.getElementById("donation-msg").innerText = msg;
+
+    let box = document.getElementById("donation-box");
+    box.style.display = "block";
+    box.style.animation = "none";
+    box.offsetHeight;
+    box.style.animation = "popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+    playDonationSound();
+
+    clearTimeout(donationTimeout);
+    donationTimeout = setTimeout(() => { box.style.display = "none"; }, 4000);
+  }
+
+  function playDonationSound() {
+    let ctx = new AudioContext();
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      let osc = ctx.createOscillator();
+      let gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.4);
+      osc.start(ctx.currentTime + i * 0.12);
+      osc.stop(ctx.currentTime + i * 0.12 + 0.4);
+    });
+  }
+
+  // ===== Chat =====
+  let colors = ["c0","c1","c2","c3","c4"];
+
+  let fakeChats = [
+    { user: "SomChai99", text: "สวัสดีครับ! 👋", c: 0 },
+    { user: "NongMint", text: "ไลฟ์เริ่มแล้วหรอ? 🎮", c: 2 },
+    { user: "BossGamer", text: "GG มาดูอยู่ครับ!", c: 4 },
+  ];
+
+  fakeChats.forEach(c => addMessage(c.user, c.text, c.c));
+
+  function sendMessage() {
+    let user = document.getElementById("chat-user").value || "ไม่ระบุชื่อ";
+    let text = document.getElementById("chat-msg").value;
+    if (!text) return;
+    addMessage(user, text, Math.floor(Math.random() * 5));
+    document.getElementById("chat-msg").value = "";
+  }
+
+  function addMessage(user, text, ci) {
+    let box = document.getElementById("chat-box");
+    let div = document.createElement("div");
+    div.className = "message";
+    div.innerHTML = `<span class="username ${colors[ci % 5]}">${user}</span><span class="msg-text">${text}</span>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  document.getElementById("chat-msg").addEventListener("keypress", e => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  // ===== Tab Switcher =====
+  function switchTab(tab) {
+    document.getElementById('tab-test-content').style.display = tab === 'test' ? 'block' : 'none';
+    document.getElementById('tab-bcel-content').style.display = tab === 'bcel' ? 'block' : 'none';
+    document.getElementById('tab-test').style.opacity = tab === 'test' ? '1' : '0.5';
+    document.getElementById('tab-bcel').style.opacity = tab === 'bcel' ? '1' : '0.5';
+  }
+
+  // ===== BCEL QR Payment =====
+  const TEST_KEY = '$2a$10$l8ricSV07MOsYwW/KoVYZ.2BoDGHbKvt58SaFRmDsq6wRQDxqG7TW';
+  const BCEL_URL = 'https://payment-gateway.phajay.co/v1/api/payment/generate-bcel-qr';
+  let bcelInterval = null;
+
+  async function generateBCEL() {
+    let name = document.getElementById('bcel-name').value || 'Anonymous';
+    let amount = document.getElementById('bcel-amount').value;
+    let msg = document.getElementById('bcel-msg').value || 'Donation';
+
+    if (!amount || amount < 1) {
+      alert('กรุณากรอกจำนวนเงินครับ');
+      return;
+    }
+
+    let btn = document.getElementById('bcel-btn');
+    btn.disabled = true;
+    btn.innerText = '⏳ กำลังสร้าง QR...';
+
+    try {
+      const response = await fetch(BCEL_URL, {
+        method: 'POST',
+        headers: {
+          'secretKey': TEST_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount: parseInt(amount),
+          description: 'Donation from ' + name
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.qrCode) {
+        document.getElementById('bcel-form').style.display = 'none';
+        document.getElementById('bcel-qr').style.display = 'block';
+
+        // โหลด QRCode library แล้วสร้าง QR
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js';
+        script.onload = () => {
+          QRCode.toCanvas(document.getElementById('bcel-canvas'), data.qrCode, { width: 180 });
+        };
+        document.head.appendChild(script);
+
+        // trigger donation alert เมื่อกดยืนยัน (simulate)
+        bcelInterval = setTimeout(() => {
+          showDonationFromBCEL(name, amount, msg);
+        }, 10000);
+
+      } else {
+        alert('เกิดข้อผิดพลาด: ' + (data.message || 'กรุณาลองใหม่'));
+        btn.disabled = false;
+        btn.innerText = '📱 สร้าง QR BCEL';
+      }
+    } catch(err) {
+      alert('ไม่สามารถเชื่อมต่อได้ครับ');
+      btn.disabled = false;
+      btn.innerText = '📱 สร้าง QR BCEL';
+    }
+  }
+
+  function cancelBCEL() {
+    clearTimeout(bcelInterval);
+    document.getElementById('bcel-form').style.display = 'flex';
+    document.getElementById('bcel-qr').style.display = 'none';
+    document.getElementById('bcel-btn').disabled = false;
+    document.getElementById('bcel-btn').innerText = '📱 สร้าง QR BCEL';
+  }
+
+  function showDonationFromBCEL(name, amount, msg) {
+    document.getElementById("donation-name").innerText = name;
+    document.getElementById("donation-amount").innerText = parseInt(amount).toLocaleString();
+    document.getElementById("donation-msg").innerText = msg;
+    let box = document.getElementById("donation-box");
+    box.style.display = "block";
+    box.style.animation = "none";
+    box.offsetHeight;
+    box.style.animation = "popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+    playDonationSound();
+    cancelBCEL();
+    setTimeout(() => { box.style.display = "none"; }, 5000);
+  }
+
+  // ===== Theme Switcher =====
+  const themes = {
+    cyberpunk: {
+      '--bg': '#060610', '--bg2': '#0d0d1f', '--card': '#0f0f22',
+      '--border': '#1e1e40', '--accent': '#00f0ff', '--accent2': '#ff2d78',
+      '--accent3': '#b400ff', '--green': '#00ff88', '--text': '#e0e8ff', '--muted': '#5a5a8a'
+    },
+    crimson: {
+      '--bg': '#0f0606', '--bg2': '#1a0808', '--card': '#1f0a0a',
+      '--border': '#3a1010', '--accent': '#ff4444', '--accent2': '#ff8c00',
+      '--accent3': '#cc2200', '--green': '#ff6622', '--text': '#ffe8e8', '--muted': '#8a5a5a'
+    },
+    matrix: {
+      '--bg': '#010f01', '--bg2': '#021502', '--card': '#031803',
+      '--border': '#0a3010', '--accent': '#00ff88', '--accent2': '#00cc66',
+      '--accent3': '#00aa44', '--green': '#00ff88', '--text': '#e0ffe8', '--muted': '#3a6a4a'
+    },
+    gold: {
+      '--bg': '#0f0c00', '--bg2': '#1a1200', '--card': '#1f1600',
+      '--border': '#3a2800', '--accent': '#ffd700', '--accent2': '#ff8c00',
+      '--accent3': '#ffaa00', '--green': '#ffd700', '--text': '#fff8e0', '--muted': '#8a7a3a'
+    },
+    pink: {
+      '--bg': '#0f0610', '--bg2': '#1a0d1f', '--card': '#1f0f22',
+      '--border': '#3a1040', '--accent': '#ff6bcd', '--accent2': '#ff2d78',
+      '--accent3': '#cc00aa', '--green': '#ff88cc', '--text': '#ffe0f8', '--muted': '#8a3a6a'
+    }
+  };
+
+  function setTheme(name) {
+    const t = themes[name];
+    const root = document.documentElement;
+    Object.entries(t).forEach(([key, val]) => root.style.setProperty(key, val));
+
+    // อัปเดตปุ่ม active
+    document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.theme-${name}`).classList.add('active');
+  }
+</script>
+</body>
+</html>
