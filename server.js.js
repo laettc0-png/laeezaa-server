@@ -27,15 +27,15 @@ app.post('/api/create-qr', async (req, res) => {
   try {
     const { amount, name, message } = req.body;
 
-    const response = await axios.post(BCEL_URL, {
-      amount: parseInt(amount),
-      description: 'Donation from ' + name
-    }, {
-      headers: {
-        'secretKey': SECRET_KEY,
-        'Content-Type': 'application/json'
-      }
-    });
+   const response = await axios.post(BCEL_URL, {
+  amount: parseInt(amount),
+  description: 'Donation from ' + name
+}, {
+  headers: {
+    'secretKey': Buffer.from(SECRET_KEY, 'utf8').toString('ascii').replace(/[^\x20-\x7E]/g, ''),
+    'Content-Type': 'application/json'
+  }
+});
 
     const data = response.data;
 
