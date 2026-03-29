@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // ⚠️ ใส่ Test Key ของคุณตรงนี้
-const SECRET_KEY = process.env.SECRET_KEY;
+const SECRET_KEY = process.env.SECRET_KEY?.trim();
 const BCEL_URL = 'https://payment-gateway.phajay.co/v1/api/payment/generate-bcel-qr';
 
 // เก็บ transactions ที่รอชำระ

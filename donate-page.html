@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-  const socket = io('http://localhost:3000');
+const SERVER_URL = 'https://laeezaa-server-production.up.railway.app';
 
   socket.on('new-donation', (data) => {
     // แสดง Donation Alert อัตโนมัติ!
@@ -655,7 +655,7 @@
   }
 
   // สร้าง QR Code
-  const SERVER_URL = 'http://localhost:3000';
+
 
 async function generateQR() {
   const amount = document.getElementById('amount').value;
